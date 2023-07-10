@@ -39,6 +39,7 @@ class HobotTTSNode {
  private:
   rclcpp::Node::SharedPtr nh_;
   rclcpp::Subscription<std_msgs::msg::String>::SharedPtr text_subscription_;
+  std::string topic_subscription_name_ = "/tts_text";
 
   void MessageCallback(const std_msgs::msg::String::SharedPtr msg);
 
