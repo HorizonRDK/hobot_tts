@@ -16,3 +16,9 @@ source /opt/tros/setup.bash
 
 ros2 run hobot_tts hobot_tts
 ```
+
+参数列表：
+
+| 参数名          | 解释            | 类型        | 是否必须 | 默认值      |
+| --------------- | -------------- | ----------- | --------| ----------- |
+| topic_sub       | 订阅的文本topic | std::string | 否      | "/tts_text" |

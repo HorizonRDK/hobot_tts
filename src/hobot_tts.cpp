@@ -43,8 +43,10 @@ HobotTTSNode::HobotTTSNode(rclcpp::Node::SharedPtr& nh) : nh_(nh) {
                  ret);
   }
 
+  nh_->declare_parameter<std::string>("topic_sub", topic_subscription_name_);
+  nh_->get_parameter<std::string>("topic_sub", topic_subscription_name_);
   text_subscription_ = nh_->create_subscription<std_msgs::msg::String>(
-      "/tts_text", 10,
+      topic_subscription_name_, 10,
       std::bind(&HobotTTSNode::MessageCallback, this, std::placeholders::_1));
 
   processing_thread_ = std::thread(&HobotTTSNode::ProcessMessages, this);
@@ -109,6 +111,50 @@ int HobotTTSNode::ConvertToPCM(const std::string& msg,
 }
 
 void HobotTTSNode::ProcessMessages() {
+  auto splitString = [](const std::string& input,
+                        std::vector<std::string>& segments) {
+    std::string segment;
+
+    size_t startPos = 0;
+    size_t index = 0;
+
+    auto isChineseComma = [](const std::string& str, size_t index) {
+      return (str[index] == '\xEF' && str[index + 1] == '\xBC' &&
+              str[index + 2] == '\x8C');
+    };
+    auto isChinesePeriod = [](const std::string& str, size_t index) {
+      return (str[index] == '\xE3' && str[index + 1] == '\x80' &&
+              str[index + 2] == '\x82');
+    };
+    auto isEnglishComma = [](char ch) { return (ch == ','); };
+    auto isEnglishPeriod = [](char ch) { return (ch == '.'); };
+
+    while (index < input.length()) {
+      if (isChineseComma(input, index) || isChinesePeriod(input, index)) {
+        segment = input.substr(startPos, index - startPos);
+        if (!segment.empty()) {
+          segments.push_back(segment);
+          segment.clear();
+        }
+        startPos = index + 3;
+      }
+      if (isEnglishComma(input[index]) || isEnglishPeriod(input[index])) {
+        segment = input.substr(startPos, index - startPos);
+        if (!segment.empty()) {
+          segments.push_back(segment);
+          segment.clear();
+        }
+        startPos = index + 1;
+      }
+      ++index;
+    }
+
+    segment = input.substr(startPos);
+    if (!segment.empty()) {
+      segments.push_back(segment);
+    }
+  };
+
   while (rclcpp::ok()) {
     std::unique_lock<std::mutex> lock(mutex_);
     cv_.wait(lock,
@@ -121,17 +167,22 @@ void HobotTTSNode::ProcessMessages() {
     while (!message_queue_.empty()) {
       auto message = message_queue_.front();
       message_queue_.pop();
-      std::unique_ptr<float[]> pcm_data;
-      int pcm_size;
-      auto ret = ConvertToPCM(message->data, pcm_data, pcm_size);
-      if (!ret) {
-        std::lock_guard<std::mutex> playback_lock(playback_mutex_);
-        if (playback_queue_.size() >= kMaxPlaybackQueueSize) {
-          // Discard the oldest PCM data if the queue size exceeds the limit
-          playback_queue_.pop();
+
+      std::vector<std::string> message_vector;
+      splitString(message->data, message_vector);
+      for (auto msg : message_vector) {
+        std::unique_ptr<float[]> pcm_data;
+        int pcm_size;
+        auto ret = ConvertToPCM(msg, pcm_data, pcm_size);
+        if (!ret) {
+          std::lock_guard<std::mutex> playback_lock(playback_mutex_);
+          if (playback_queue_.size() >= kMaxPlaybackQueueSize) {
+            // Discard the oldest PCM data if the queue size exceeds the limit
+            playback_queue_.pop();
+          }
+          playback_queue_.push(std::make_pair(std::move(pcm_data), pcm_size));
+          cv_playback_.notify_one();
         }
-        playback_queue_.push(std::make_pair(std::move(pcm_data), pcm_size));
-        cv_playback_.notify_one();
       }
     }
   }
