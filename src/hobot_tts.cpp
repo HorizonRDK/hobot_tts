@@ -22,12 +22,15 @@
 namespace hobot_tts {
 
 HobotTTSNode::HobotTTSNode(rclcpp::Node::SharedPtr& nh) : nh_(nh) {
+  nh_->declare_parameter<std::string>("playback_device", playback_device_name_);
+  nh_->get_parameter<std::string>("playback_device", playback_device_name_);
+
   speaker_device_ = alsa_device_allocate();
   if (!speaker_device_) {
     RCLCPP_ERROR(nh_->get_logger(), "alloc speaker device error!");
     throw std::runtime_error("HobotTTSNode allocate alsa device failed");
   }
-  speaker_device_->name = "hw:0,1";
+  speaker_device_->name = const_cast<char *>(playback_device_name_.c_str());;
   speaker_device_->format = SND_PCM_FORMAT_S16;
   speaker_device_->direct = SND_PCM_STREAM_PLAYBACK;
   speaker_device_->rate = 16000;
