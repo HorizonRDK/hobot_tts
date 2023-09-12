@@ -2,16 +2,9 @@
 
 **hobot_tts**提供将文本转化为语音播放功能，订阅文本消息，然后调用TTS软件接口，将文本转化为PCM数据，最后调用ALSA接口播放。
 
-首次运行需要下载模型文件解压，详细命令如下：
+## 环境搭建
 
-```bash
-wget http://archive.sunrisepi.tech//tts-model/tts_model.tar.gz
-sudo tar -xf tts_model.tar.gz -C /opt/tros/lib/hobot_tts/
-```
-
-环境搭建：
-
-运行hobot_tts，需要搭配地平线专用音频驱动板，或修改代码中打开的音频设备。使用地平线专用音频驱动板板子上电后需要运行如下命令加载音频驱动：
+运行hobot_tts，需要搭配地平线专用音频板，或修改代码适配新的播放设备。使用地平线专用音频板，板子上电后需要运行如下命令加载音频驱动：
 
 ```bash
 echo 8 >/proc/sys/kernel/printk
@@ -44,9 +37,18 @@ root@ubuntu:~# ls /dev/snd/
 by-path  controlC0  pcmC0D0c  pcmC0D1p  timer
 ```
 
-如果出现`pcmC0D1p`设备则表示加载成功。
+如果出现例如`pcmC0D1p`新增音频设备则表示加载成功。
 
-运行方式：
+## 运行方式
+
+首次运行需要下载模型文件解压，详细命令如下：
+
+```bash
+wget http://archive.sunrisepi.tech//tts-model/tts_model.tar.gz
+sudo tar -xf tts_model.tar.gz -C /opt/tros/lib/hobot_tts/
+```
+
+启动程序：
 
 ```bash
 source /opt/tros/setup.bash
@@ -59,8 +61,11 @@ ros2 run hobot_tts hobot_tts
 
 运行成功后，程序订阅topic "/tts_text"（消息类型为std_msgs/msg/String），然后转化为语音信号播放。
 
-参数列表：
+注意：加载音频驱动时，若新增音频设备不是`pcmC0D1p`，例如`pcmC1D1p`，则需要使用参数`playback_device`指定播放音频设备。
 
-| 参数名          | 解释            | 类型        | 是否必须 | 默认值      |
-| --------------- | -------------- | ----------- | --------| ----------- |
-| topic_sub       | 订阅的文本topic | std::string | 否      | "/tts_text" |
+## 参数列表
+
+| 参数名          | 解释             | 类型        | 是否必须 | 默认值      |
+| --------------- | ---------------- | ----------- | -------- | ----------- |
+| topic_sub       | 订阅的文本topic  | std::string | 否       | "/tts_text" |
+| playback_device | 语音播放音频设备 | std::string | 否       | "hw:0,1"    |
