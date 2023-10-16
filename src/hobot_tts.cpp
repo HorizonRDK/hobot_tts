@@ -121,19 +121,16 @@ void HobotTTSNode::ProcessMessages() {
     size_t startPos = 0;
     size_t index = 0;
 
-    auto isChineseComma = [](const std::string& str, size_t index) {
+    auto isChinesePunctuation = [](const std::string &str, size_t index) {
       return (str[index] == '\xEF' && str[index + 1] == '\xBC' &&
-              str[index + 2] == '\x8C');
+              (str[index + 2] == '\x8C' || str[index + 2] == '\x9F' ||
+               str[index + 2] == '\x9A' || str[index + 2] == '\x81')) ||
+             (str[index] == '\xE3' && str[index + 1] == '\x80' &&
+              (str[index + 2] == '\x82' || str[index + 2] == '\x81'));
     };
-    auto isChinesePeriod = [](const std::string& str, size_t index) {
-      return (str[index] == '\xE3' && str[index + 1] == '\x80' &&
-              str[index + 2] == '\x82');
-    };
-    auto isEnglishComma = [](char ch) { return (ch == ','); };
-    auto isEnglishPeriod = [](char ch) { return (ch == '.'); };
 
     while (index < input.length()) {
-      if (isChineseComma(input, index) || isChinesePeriod(input, index)) {
+      if (isChinesePunctuation(input, index)) {
         segment = input.substr(startPos, index - startPos);
         if (!segment.empty()) {
           segments.push_back(segment);
@@ -141,7 +138,7 @@ void HobotTTSNode::ProcessMessages() {
         }
         startPos = index + 3;
       }
-      if (isEnglishComma(input[index]) || isEnglishPeriod(input[index])) {
+      if (ispunct(input[index]) || isspace(input[index])) {
         segment = input.substr(startPos, index - startPos);
         if (!segment.empty()) {
           segments.push_back(segment);
