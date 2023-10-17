@@ -114,7 +114,7 @@ int HobotTTSNode::ConvertToPCM(const std::string& msg,
 }
 
 void HobotTTSNode::ProcessMessages() {
-  auto splitString = [](const std::string& input,
+  auto splitString = [](std::string& input,
                         std::vector<std::string>& segments) {
     std::string segment;
 
@@ -138,13 +138,19 @@ void HobotTTSNode::ProcessMessages() {
         }
         startPos = index + 3;
       }
-      if (ispunct(input[index]) || isspace(input[index])) {
+      if (ispunct(input[index])) {
         segment = input.substr(startPos, index - startPos);
         if (!segment.empty()) {
           segments.push_back(segment);
           segment.clear();
         }
         startPos = index + 1;
+      }
+      if (isspace(input[index])) {
+        input[index] = ' ';
+      }
+      if (isupper(input[index])) {
+        input[index] = tolower(input[index]);
       }
       ++index;
     }
