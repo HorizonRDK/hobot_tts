@@ -44,7 +44,7 @@ by-path  controlC0  pcmC0D0c  pcmC0D1p  timer
 首次运行需要下载模型文件解压，详细命令如下：
 
 ```bash
-wget http://archive.sunrisepi.tech//tts-model/tts_model.tar.gz
+wget http://sunrise.horizon.cc//tts-model/tts_model.tar.gz
 sudo tar -xf tts_model.tar.gz -C /opt/tros/lib/hobot_tts/
 ```
 
