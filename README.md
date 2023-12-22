@@ -4,40 +4,16 @@
 
 ## 环境搭建
 
-运行hobot_tts，需要搭配地平线专用音频板，或修改代码适配新的播放设备。使用地平线专用音频板，板子上电后需要运行如下命令加载音频驱动：
+运行hobot_tts，需要确认音频设备设置正确，具体设置方法参考RDK用户手册[音频转接板](https://developer.horizon.cc/documents_rdk/hardware_development/rdk_x3/audio_board)章节。
 
-```bash
-echo 8 >/proc/sys/kernel/printk
-echo 112 >/sys/class/gpio/export
-echo out >/sys/class/gpio/gpio112/direction
-echo 1 >/sys/class/gpio/gpio112/value
-echo 118 >/sys/class/gpio/export
-echo out >/sys/class/gpio/gpio118/direction
-echo 1 >/sys/class/gpio/gpio118/value
-
-
-modprobe -r es7210
-modprobe -r es8156
-modprobe -r hobot-i2s-dma
-modprobe -r hobot-cpudai
-modprobe -r hobot-snd-7210
-
-
-modprobe es7210
-modprobe es8156
-modprobe hobot-i2s-dma
-modprobe hobot-cpudai
-modprobe hobot-snd-7210 snd_card=5
-```
-
-运行上述命令后使用如下命令可检查是否加载成功：
+可使用如下命令检查是否设置正确：
 
 ```bash
 root@ubuntu:~# ls /dev/snd/
 by-path  controlC0  pcmC0D0c  pcmC0D1p  timer
 ```
 
-如果出现例如`pcmC0D1p`新增音频设备则表示加载成功。
+如果出现例如`pcmC0D1p`音频设备则表示设置正确。
 
 ## 运行方式
 

@@ -30,7 +30,8 @@ HobotTTSNode::HobotTTSNode(rclcpp::Node::SharedPtr& nh) : nh_(nh) {
     RCLCPP_ERROR(nh_->get_logger(), "alloc speaker device error!");
     throw std::runtime_error("HobotTTSNode allocate alsa device failed");
   }
-  speaker_device_->name = const_cast<char *>(playback_device_name_.c_str());;
+  speaker_device_->name = const_cast<char*>(playback_device_name_.c_str());
+  ;
   speaker_device_->format = SND_PCM_FORMAT_S16;
   speaker_device_->direct = SND_PCM_STREAM_PLAYBACK;
   speaker_device_->rate = 16000;
@@ -121,7 +122,7 @@ void HobotTTSNode::ProcessMessages() {
     size_t startPos = 0;
     size_t index = 0;
 
-    auto isChinesePunctuation = [](const std::string &str, size_t index) {
+    auto isChinesePunctuation = [](const std::string& str, size_t index) {
       return (str[index] == '\xEF' && str[index + 1] == '\xBC' &&
               (str[index + 2] == '\x8C' || str[index + 2] == '\x9F' ||
                str[index + 2] == '\x9A' || str[index + 2] == '\x81')) ||
@@ -220,9 +221,9 @@ void HobotTTSNode::PlaybackMessages() {
       if (speaker_device_) {
         snd_pcm_sframes_t frames = snd_pcm_bytes_to_frames(
             speaker_device_->handle, pcm_int16.size() * sizeof(int16_t));
-        snd_pcm_pause(speaker_device_->handle, 0);
+        snd_pcm_prepare(speaker_device_->handle);  // 耗时0.1ms
         alsa_device_write(speaker_device_, pcm_int16.data(), frames);
-        snd_pcm_pause(speaker_device_->handle, 1);
+        snd_pcm_drop(speaker_device_->handle);  // 耗时1ms
       }
     }
   }
