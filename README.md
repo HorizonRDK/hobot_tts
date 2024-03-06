@@ -21,7 +21,7 @@ by-path  controlC0  pcmC0D0c  pcmC0D1p  timer
 
 ```bash
 wget http://sunrise.horizon.cc//tts-model/tts_model.tar.gz
-sudo tar -xf tts_model.tar.gz -C /opt/tros/lib/hobot_tts/
+sudo tar -xf tts_model.tar.gz -C /opt/tros/${TROS_DISTRO}/lib/hobot_tts/
 ```
 
 启动程序：

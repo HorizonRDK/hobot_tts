@@ -57,8 +57,11 @@ HobotTTSNode::HobotTTSNode(rclcpp::Node::SharedPtr& nh) : nh_(nh) {
   playback_thread_ = std::thread(&HobotTTSNode::PlaybackMessages, this);
 
   int err_code = 0;
+  std::string tros_distro
+      = std::string(std::getenv("TROS_DISTRO")? std::getenv("TROS_DISTRO") : "");
   tts_ =
-      wetts_init("/opt/tros/lib/hobot_tts/tts_model", "tts.flags", &err_code);
+      wetts_init(std::string("/opt/tros/" + tros_distro + "/lib/hobot_tts/tts_model").c_str(),
+      "tts.flags", &err_code);
   struct audio_info info = wetts_audio_info(tts_);
   pcm_data_ = new char[info.max_len];
 

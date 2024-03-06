@@ -1,5 +1,9 @@
 # Changelog for package hobot_tts
 
+tros_2.0.5 (2024-3-6)
+------------------
+1. 配置文件路径由`/opt/tros/lib`变更为`/opt/tros/${TROS_DISTRO}/lib`。
+
 tros_2.0.4 (2023-12-22)
 ------------------
 1. 更新音频播放函数调用，解决新版本系统播放失败问题
