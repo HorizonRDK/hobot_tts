@@ -1,47 +1,49 @@
+English| [简体中文](./README_cn.md)
+
 # Hobot TTS
 
-**hobot_tts**提供将文本转化为语音播放功能，订阅文本消息，然后调用TTS软件接口，将文本转化为PCM数据，最后调用ALSA接口播放。
+**hobot_tts** provides the function to convert text into speech for audio playback. It subscribes to text messages, then calls the TTS software interface to convert the text into PCM data, and finally uses the ALSA interface for playback.
 
-## 环境搭建
+## Environment Setup
 
-运行hobot_tts，需要确认音频设备设置正确，具体设置方法参考RDK用户手册[音频转接板](https://developer.horizon.cc/documents_rdk/hardware_development/rdk_x3/audio_board)章节。
+To run hobot_tts, it is necessary to confirm that the audio device is set up correctly. Refer to the RDK User Manual [Audio Adapter](https://developer.horizon.cc/documents_rdk/hardware_development/rdk_x3/audio_board) section for specific setup methods.
 
-可使用如下命令检查是否设置正确：
+You can use the following command to check if the settings are correct:
 
 ```bash
 root@ubuntu:~# ls /dev/snd/
 by-path  controlC0  pcmC0D0c  pcmC0D1p  timer
 ```
 
-如果出现例如`pcmC0D1p`音频设备则表示设置正确。
+If an audio device such as `pcmC0D1p` appears, it means the settings are correct.
 
-## 运行方式
+## How to Run
 
-首次运行需要下载模型文件解压，详细命令如下：
+To run for the first time, download and extract the model file. The detailed commands are as follows:
 
 ```bash
 wget http://sunrise.horizon.cc//tts-model/tts_model.tar.gz
 sudo tar -xf tts_model.tar.gz -C /opt/tros/${TROS_DISTRO}/lib/hobot_tts/
 ```
 
-启动程序：
+Start the program:
 
 ```bash
 source /opt/tros/setup.bash
 
-# 屏蔽调式打印信息
+# Suppress debug printing information
 export GLOG_minloglevel=1
 
 ros2 run hobot_tts hobot_tts
 ```
 
-运行成功后，程序订阅topic "/tts_text"（消息类型为std_msgs/msg/String），然后转化为语音信号播放。
+After successful execution, the program subscribes to the topic "/tts_text" (message type is std_msgs/msg/String) and converts it into speech signal for playback.
 
-注意：加载音频驱动时，若新增音频设备不是`pcmC0D1p`，例如`pcmC1D1p`，则需要使用参数`playback_device`指定播放音频设备。
+Note: When loading the audio driver, if the new audio device is not `pcmC0D1p`, for example `pcmC1D1p`, you need to use the `playback_device` parameter to specify the playback audio device.
 
-## 参数列表
+## Parameter List
 
-| 参数名          | 解释             | 类型        | 是否必须 | 默认值      |
-| --------------- | ---------------- | ----------- | -------- | ----------- |
-| topic_sub       | 订阅的文本topic  | std::string | 否       | "/tts_text" |
-| playback_device | 语音播放音频设备 | std::string | 否       | "hw:0,1"    |
+| Parameter Name  | Explanation              | Type         | Required | Default Value |
+| --------------- | ------------------------ | ------------ | -------- | ------------- |
+| topic_sub       | Subscribed text topic    | std::string  | No       | "/tts_text"   |
+| playback_device | Audio playback device     | std::string  | No       | "hw:0,1"      |
